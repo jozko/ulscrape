@@ -1,12 +1,10 @@
 # -*- coding: utf-8 -*-
-import httplib2
 from bs4 import BeautifulSoup
 import re
 import sys
 import os
-import shutil
-import urllib2
 import argparse
+import requests
 
 UL_BASE_URL = 'http://www.uradni-list.si/uradni-list?year='
 UL_YEAR_URL = 'http://www.uradni-list.si/1?year=%s&edition=%s'
@@ -15,24 +13,22 @@ OPTIONS = []
 DLPDFS = []
 
 # Get UL page, decide based on number of params.
-# Also returns response code, you can get it as
-# get_html(UL_BASE_URL, YEAR)[1]['status'] if i
-# you need it. Will always get you 200 methinks.
+# Also returns response code, you can get it in
+# req.status_code if you need it.
 def get_html(*args):
-    html = httplib2.Http()
     if len(args) == 2:
-        status, response = html.request(args[0] + args[1])
+        req = requests.get(args[0] + args[1])
     if len(args) == 3:
-        status, response = html.request(args[0] % (args[1], args[2]))
-    return response, status
+        req = requests.get(args[0] % (args[1], args[2]))
+    return req.content, req.status_code
 
 def fetch_file(url, basepath):
     fname = url.split('/')[-1]
     fpath = os.path.join(basepath, fname)
     print "Downloading %s to %s " % (url, fpath)
-    req = urllib2.urlopen(url)
-    with open(fpath, 'wb') as fp:
-        shutil.copyfileobj(req, fp)
+    req = requests.get(url)
+    with open(fpath, 'wb') as pdf:
+        pdf.write(req.content)
 
 # Get base html for year, to parse option values for all publications
 # for that particular year. If you use 0000 as year, you'll get ALL
