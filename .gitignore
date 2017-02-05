@@ -2,3 +2,5 @@
 *.pdf
 *.orig
 *.swp
+*.pyc
+venv*
