@@ -1,18 +1,10 @@
+# Needs a w3lib override to >= 1.15.1 since upstream w3lib is at version 1.14.2
+# scrapy starproject showing a weird problem not setting the
+# top level project dir to +x, exiting with 'PermissionError: [Errno 13] Permission denied'
+# on MacOS and Ubuntu 12.04. Need to test in NixOS maybe nix-shell is to blame?
 with import <nixpkgs> {};
 
 let
-
-      w3lib  = python35Packages.buildPythonPackage rec {
-         name = "python3.5-w3lib-1.16.0";
-         src = fetchurl {
-           url = "https://pypi.python.org/packages/c8/4d/47d96235c171e456e711c0e5f14eb836e3215b838b064c1f2e5d336a7ca5/w3lib-1.16.0.tar.gz";
-           md5 = "09be7841a9f5c651bc9e759bed7c7dc5";
-           };
-       propagatedBuildInputs = [ python35Packages.six ];
-       dontStrip = true;
-       };
-
-
        Scrapy = python35Packages.buildPythonPackage rec {
          name = "Scrapy-1.3.0";
          src = fetchurl {
@@ -45,14 +37,6 @@ python35Packages.buildPythonPackage {
   name = "impurePythonEnv";
   buildInputs = [
      git
-     #libxml2
-     #libxslt
-     #libffi
-     #stdenv
-     #zlib
-     #gcc
-     #clang
-     #openssl
      Scrapy
      ];
       src = null;

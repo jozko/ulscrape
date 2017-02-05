@@ -1,0 +1,9 @@
+cffi
+scrapy==1.2.1
+cryptography
+arrow
+SQLAlchemy
+psycopg2
+datadog
+scrapy-sentry
+awesome-slugify
