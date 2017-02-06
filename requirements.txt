@@ -1,4 +1,11 @@
-argparse==1.2.1
-beautifulsoup4==4.2.1
-requests==1.2.3
-wsgiref==0.1.2
+cffi
+# packaging
+# setuptools
+scrapy==1.2.1
+cryptography
+arrow
+# SQLAlchemy
+# psycopg2
+# datadog
+# scrapy-sentry
+# awesome-slugify
