@@ -15,7 +15,7 @@ class UradniListSpider(scrapy.Spider):
         """ Initialize original Scrapy spider. Then load arguments passed via CLI. """
         super(UradniListSpider, self).__init__(*args, **kwargs)
 
-        if years is not None or years is not '':
+        if years is not None and years is not '':
             self.initial_years = [int(y) for y in years.split(",") if y != '']
 
     def start_requests(self):
