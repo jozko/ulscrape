@@ -11,10 +11,8 @@ class UradniListSpider(scrapy.Spider):
     search_url = 'https://www.uradni-list.si/glasilo-uradni-list-rs/rezultati-iskanja-tabele'
 
     def start_requests(self):
-       return [scrapy.http.FormRequest(
-                url='https://www.uradni-list.si/glasilo-uradni-list-rs/rezultati-iskanja-tabele',
-                formdata={'year': str(year)}
-            ) for year in self.search_years()]
+       return [scrapy.http.FormRequest(url=self.search_url, formdata={'year': str(year)})
+               for year in self.search_years()]
 
 
     def parse(self, response):
