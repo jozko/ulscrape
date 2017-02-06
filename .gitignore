@@ -3,4 +3,5 @@
 *.orig
 *.swp
 *.pyc
+.env
 venv*
