@@ -3,7 +3,7 @@
 ## Tests
 
 ```bash
-python -m unittest test/**/test_*.py
+python -m unittest test/**/test_*.py -vv
 ```
 
 ## Authors
