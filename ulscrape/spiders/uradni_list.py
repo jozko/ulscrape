@@ -26,25 +26,28 @@ class UradniListSpider(scrapy.Spider):
 
     def parse(self, response):
         pages_re = re.compile('.*val\(\'(?P<page>[0-9]+)\'\).*')
-        page = []
+        pages = []
         if response.css('a[href*=javascript]::attr(href)').extract():
             for p in response.css('a[href*=javascript]::attr(href)').extract():
                 if 'val' in p:
-                    page.append(int(re.match(pages_re, p).group('page')))
+                    pages.append(int(re.match(pages_re, p).group('page')))
         else:
-            page = [1]
-        #p_range = range(1, max(page)+1)
-        #print(list(range(1, max(page)+1)), response.url, response.request.body)
-        yield { 'pages': list(range(1, max(page)+1)),
-                'response_url': str(response.url),
-                'archive_year': str(response.request.body),
+            pages = [1]
+
+        year = response.request.body.decode(encoding='utf-8').split('=')[1]
+        archive_pages = list(range(1, max(pages)+1))
+
+        return [scrapy.http.FormRequest(
+            url=self.search_url, formdata={'year': year, 'page': str(p)},
+            callback=self.parse_archive_page
+        ) for p in archive_pages ]
+
+    
+    def parse_archive_page(self, response):
+        yield {
+                'urls': [ self.base_url + url for url in response.css('a[href*=_pdf]::attr(href)').extract() ],
+                'meta': response.request.body
               }
-            
-        #pass
-
-    def search_ul(self, response):
-        pass
-
     def search_years(self, initial_years=None):
         """ If initial_years are set, use that. Otherwise use list from 1991 till Today."""
         return self.initial_years if self.initial_years else list(range(1991, datetime.now().timetuple()[0]+1))
