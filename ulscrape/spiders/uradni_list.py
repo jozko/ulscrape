@@ -9,10 +9,19 @@ class UradniListSpider(scrapy.Spider):
     base_url = 'https://www.uradni-list.si'
     allowed_domains = ["uradni-list.si"]
     search_url = 'https://www.uradni-list.si/glasilo-uradni-list-rs/rezultati-iskanja-tabele'
+    initial_years = []
+
+    def __init__(self, years=None, *args, **kwargs):
+        """ Initialize original Scrapy spider. Then load arguments passed via CLI. """
+        super(UradniListSpider, self).__init__(*args, **kwargs)
+
+        if years is not None or years is not '':
+            self.initial_years = [int(y) for y in years.split(",") if y != '']
 
     def start_requests(self):
-       return [scrapy.http.FormRequest(url=self.search_url, formdata={'year': str(year)})
-               for year in self.search_years()]
+       return [scrapy.http.FormRequest(
+           url=self.search_url, formdata={'year': str(year)}
+       ) for year in self.search_years()]
 
 
     def parse(self, response):
@@ -36,5 +45,6 @@ class UradniListSpider(scrapy.Spider):
     def search_ul(self, response):
         pass
 
-    def search_years(self):
-        return list(range(1991, datetime.now().timetuple()[0]+1))
+    def search_years(self, initial_years=None):
+        """ If initial_years are set, use that. Otherwise use list from 1991 till Today."""
+        return self.initial_years if self.initial_years else list(range(1991, datetime.now().timetuple()[0]+1))
