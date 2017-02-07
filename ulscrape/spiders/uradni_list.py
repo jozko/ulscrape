@@ -23,7 +23,6 @@ class UradniListSpider(scrapy.Spider):
            url=self.search_url, formdata={'year': str(year)}
        ) for year in self.search_years()]
 
-
     def parse(self, response):
         if '&' not in response.request.body.decode(encoding='utf-8'):
             return self.parse_archive_index_page(response)
@@ -32,7 +31,6 @@ class UradniListSpider(scrapy.Spider):
         else:
             raise Exception('No match for parsing the UL index or archive page, strange.')
 
-   
     def parse_archive_index_page(self, response):
         pages_re = re.compile('.*val\(\'(?P<page>[0-9]+)\'\).*')
         pages = []
