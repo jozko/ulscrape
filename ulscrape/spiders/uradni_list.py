@@ -20,7 +20,7 @@ class UradniListSpider(scrapy.Spider):
 
     def start_requests(self):
        return [scrapy.http.FormRequest(
-           url=self.search_url, formdata={'year': str(year)}, meta={'year': str(year)}
+           url=self.search_url, formdata={'year': str(year)}, meta={'year': year}
        ) for year in self.search_years()]
 
     def parse(self, response):
@@ -32,20 +32,18 @@ class UradniListSpider(scrapy.Spider):
             raise Exception('No match for parsing the UL index or archive page, strange.')
 
     def parse_archive_index_page(self, response):
-        pages_re = re.compile('.*val\(\'(?P<page>[0-9]+)\'\).*')
-        pages = []
-        if response.css('a[href*=javascript]::attr(href)').extract():
-            for r in response.css('a[href*=javascript]::attr(href)').extract():
-                if 'val' in r:
-                    pages.append(int(re.match(pages_re, r).group('page')))
+        pages = re.findall(r'.*val\(\'(\d+)\'\).*/g', response.text)
+
+        if len(pages) > 0:
+            pages_max = max([int(p) for p in pages])
         else:
-            pages = [1]
+            pages_max = 1
 
         year = response.meta['year']
-        archive_pages = range(1, max(pages)+1)
+        archive_pages = range(1, pages_max+1)
 
         for p in archive_pages:
-            yield scrapy.http.FormRequest(url=self.search_url, formdata={'year': year, 'page': str(p)}, meta={'year': str(year), 'page': str(p)})
+            yield scrapy.http.FormRequest(url=self.search_url, formdata={'year': str(year), 'page': str(p)}, meta={'year': year, 'page': p})
 
     def parse_archive_page(self, response):
         yield {
@@ -55,4 +53,4 @@ class UradniListSpider(scrapy.Spider):
 
     def search_years(self, initial_years=None):
         """ If initial_years are set, use that. Otherwise use list from 1991 till Today."""
-        return self.initial_years if self.initial_years else range(1991, datetime.now().timetuple()[0]+1)
+        return self.initial_years if self.initial_years else range(1991, datetime.now().year+1)
