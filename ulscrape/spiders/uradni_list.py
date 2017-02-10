@@ -20,13 +20,13 @@ class UradniListSpider(scrapy.Spider):
 
     def start_requests(self):
        return [scrapy.http.FormRequest(
-           url=self.search_url, formdata={'year': str(year)}
+           url=self.search_url, formdata={'year': str(year)}, meta={'year': str(year)}
        ) for year in self.search_years()]
 
     def parse(self, response):
-        if '&' not in response.request.body.decode(encoding='utf-8'):
+        if 'page' not in response.request.meta:
             return self.parse_archive_index_page(response)
-        elif '&' in response.request.body.decode(encoding='utf-8'):
+        elif 'page' in response.request.meta:
             return self.parse_archive_page(response)
         else:
             raise Exception('No match for parsing the UL index or archive page, strange.')
@@ -41,16 +41,16 @@ class UradniListSpider(scrapy.Spider):
         else:
             pages = [1]
 
-        year = response.request.body.decode(encoding='utf-8').split('=')[1]
+        year = response.request.meta['year']
         archive_pages = list(range(1, max(pages)+1))
 
         for p in archive_pages:
-            yield scrapy.http.FormRequest(url=self.search_url, formdata={'year': year, 'page': str(p)})
+            yield scrapy.http.FormRequest(url=self.search_url, formdata={'year': year, 'page': str(p)}, meta={'year': str(year), 'page': str(p)})
 
     def parse_archive_page(self, response):
         yield {
                 'urls': [ self.base_url + url for url in response.css('a[href*=_pdf]::attr(href)').extract() ],
-                'meta': response.request.body.decode(encoding='utf-8')
+                'meta': response.request.meta 
               }
 
     def search_years(self, initial_years=None):
