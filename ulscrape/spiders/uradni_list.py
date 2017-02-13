@@ -1,10 +1,9 @@
 # -*- coding: utf-8 -*-
 import re
 from datetime import datetime
-import scrapy
+from scrapy import Spider, FormRequest
 
-
-class UradniListSpider(scrapy.Spider):
+class UradniListSpider(Spider):
     name = "uradni-list"
     base_url = 'https://www.uradni-list.si'
     allowed_domains = ["uradni-list.si"]
@@ -19,9 +18,8 @@ class UradniListSpider(scrapy.Spider):
             self.initial_years = [int(y) for y in years.split(",") if y != '']
 
     def start_requests(self):
-       return [scrapy.http.FormRequest(
-           url=self.search_url, formdata={'year': str(year)}, meta={'year': year}
-       ) for year in self.search_years()]
+       return [FormRequest(url=self.search_url, formdata={'year': str(year)}, meta={'year': year}
+            ) for year in self.search_years()]
 
     def parse(self, response):
         if 'page' not in response.meta:
@@ -43,12 +41,11 @@ class UradniListSpider(scrapy.Spider):
         archive_pages = range(1, pages_max+1)
 
         for p in archive_pages:
-            yield scrapy.http.FormRequest(url=self.search_url, formdata={'year': str(year), 'page': str(p)}, meta={'year': year, 'page': p})
+            yield FormRequest(url=self.search_url, formdata={'year': str(year), 'page': str(p)}, meta={'year': year, 'page': p})
 
     def parse_archive_page(self, response):
         yield {
-                'urls': [ self.base_url + url for url in response.css('a[href*=_pdf]::attr(href)').extract() ],
-                'meta': response.meta 
+                'file_urls': [ self.base_url + url for url in response.css('a[href*=_pdf]::attr(href)').extract() ],
               }
 
     def search_years(self, initial_years=None):
