@@ -15,39 +15,42 @@ class UradniListSpider(scrapy.Spider):
         """ Initialize original Scrapy spider. Then load arguments passed via CLI. """
         super(UradniListSpider, self).__init__(*args, **kwargs)
 
-        if years is not None or years is not '':
+        if years is not None and years is not '':
             self.initial_years = [int(y) for y in years.split(",") if y != '']
 
     def start_requests(self):
        return [scrapy.http.FormRequest(
-           url=self.search_url, formdata={'year': str(year)}
+           url=self.search_url, formdata={'year': str(year)}, meta={'year': year}
        ) for year in self.search_years()]
 
-
     def parse(self, response):
-        pages_re = re.compile('.*val\(\'(?P<page>[0-9]+)\'\).*')
-        pages = []
-        if response.css('a[href*=javascript]::attr(href)').extract():
-            for p in response.css('a[href*=javascript]::attr(href)').extract():
-                if 'val' in p:
-                    pages.append(int(re.match(pages_re, p).group('page')))
+        if 'page' not in response.meta:
+            return self.parse_archive_index_page(response)
+        elif 'page' in response.meta:
+            return self.parse_archive_page(response)
         else:
-            pages = [1]
+            raise Exception('No match for parsing the UL index or archive page, strange.')
 
-        year = response.request.body.decode(encoding='utf-8').split('=')[1]
-        archive_pages = list(range(1, max(pages)+1))
+    def parse_archive_index_page(self, response):
+        pages = re.findall(r'.*val\(\'(\d+)\'\).*/g', response.text)
 
-        return [scrapy.http.FormRequest(
-            url=self.search_url, formdata={'year': year, 'page': str(p)},
-            callback=self.parse_archive_page
-        ) for p in archive_pages ]
+        if len(pages) > 0:
+            pages_max = max([int(p) for p in pages])
+        else:
+            pages_max = 1
 
-    
+        year = response.meta['year']
+        archive_pages = range(1, pages_max+1)
+
+        for p in archive_pages:
+            yield scrapy.http.FormRequest(url=self.search_url, formdata={'year': str(year), 'page': str(p)}, meta={'year': year, 'page': p})
+
     def parse_archive_page(self, response):
         yield {
                 'urls': [ self.base_url + url for url in response.css('a[href*=_pdf]::attr(href)').extract() ],
-                'meta': response.request.body
+                'meta': response.meta 
               }
+
     def search_years(self, initial_years=None):
         """ If initial_years are set, use that. Otherwise use list from 1991 till Today."""
-        return self.initial_years if self.initial_years else list(range(1991, datetime.now().timetuple()[0]+1))
+        return self.initial_years if self.initial_years else range(1991, datetime.now().year+1)
