@@ -2,7 +2,6 @@
 import unittest
 from test.helpers import response_from
 from ulscrape.spiders.uradni_list import UradniListSpider
-from pprint import pprint
 
 
 class TestUradniListSpider(unittest.TestCase):
@@ -19,7 +18,6 @@ class TestUradniListSpider(unittest.TestCase):
         fd = {'year': '2017'}
         response = response_from('002-rezultati-2017.html', None, fd, fd)
         res = self.spider.parse(response)
-        pprint(res)
         self.assertEqual(len(list(res)), 1)
 
     def test_parse_with_more_index(self):
