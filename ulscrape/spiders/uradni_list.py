@@ -20,7 +20,9 @@ class UradniListSpider(Spider):
             self.initial_years = [int(y) for y in years.split(",") if y != '']
 
     def start_requests(self):
-        return [FormRequest(url=self.search_url, formdata={'year': str(year)}, meta={'year': year}
+        return [FormRequest(self.search_url,
+                            formdata={'year': str(year)},
+                            meta={'year': year}
                             ) for year in self.search_years()]
 
     def parse(self, response):
@@ -43,7 +45,8 @@ class UradniListSpider(Spider):
         archive_pages = range(1, pages_max + 1)
 
         for p in archive_pages:
-            yield FormRequest(url=self.search_url, formdata={'year': str(year), 'page': str(p)},
+            yield FormRequest(url=self.search_url,
+                              formdata={'year': str(year), 'page': str(p)},
                               meta={'year': year, 'page': p})
 
     def parse_archive_page(self, response):
