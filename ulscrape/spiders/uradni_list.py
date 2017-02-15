@@ -2,6 +2,7 @@
 import re
 from datetime import datetime
 from scrapy import Spider, FormRequest
+from ulscrape.items import UlscrapeItem
 
 class UradniListSpider(Spider):
     name = "uradni-list"
@@ -44,9 +45,13 @@ class UradniListSpider(Spider):
             yield FormRequest(url=self.search_url, formdata={'year': str(year), 'page': str(p)}, meta={'year': year, 'page': p})
 
     def parse_archive_page(self, response):
-        yield {
-                'file_urls': [ self.base_url + url for url in response.css('a[href*=_pdf]::attr(href)').extract() ],
-              }
+        for url in response.css('a[href*=_pdf]::attr(href)').extract():
+            yield UlscrapeItem(
+                    scrapped_at = datetime.now().strftime('%Y-%m-%d %H:%M:%S'),
+                    archive_year = response.meta['year'],
+                    archive_page = response.meta['page'],
+                    file_urls = [ self.base_url + url ] 
+                    )
 
     def search_years(self, initial_years=None):
         """ If initial_years are set, use that. Otherwise use list from 1991 till Today."""
