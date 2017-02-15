@@ -1,9 +1,11 @@
 # -*- coding: utf-8 -*-
+import scrapy
+from scrapy.exceptions import DontCloseSpider
+from scrapy import Spider, FormRequest
 import re
 from datetime import datetime
-import scrapy
 from ulscrape.spiders import UlSpider, UlSpiderModes, DisperseRequest, DisperseFormRequest
-from scrapy.exceptions import DontCloseSpider
+from ulscrape.items import Document
 
 
 class UradniListSpider(UlSpider):
@@ -14,7 +16,6 @@ class UradniListSpider(UlSpider):
     initial_years = []
 
     def __init__(self, years=None, *args, **kwargs):
-        """ Initialize original Scrapy spider. Then load arguments passed via CLI. """
         super(UradniListSpider, self).__init__(*args, **kwargs)
 
         if years is not None and years is not '':
@@ -56,10 +57,12 @@ class UradniListSpider(UlSpider):
                                       meta={'year': year, 'page': p})
 
     def parse_archive_page(self, response):
-        yield {
-            'urls': [self.base_url + url for url in response.css('a[href*=_pdf]::attr(href)').extract()],
-            'meta': response.meta
-        }
+        for url in response.css('a[href*=_pdf]::attr(href)').extract():
+            yield Document(
+                archive_year=response.meta['year'],
+                archive_page=response.meta['page'],
+                file_urls=[self.base_url + url]
+            )
 
     def search_years(self, initial_years=None):
         """ If initial_years are set, use that. Otherwise use list from 1991 till Today."""
