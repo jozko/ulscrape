@@ -4,7 +4,9 @@ MAINTAINER "Jozko Skrablin"
 
 ENV USER="scrapy"
 
-RUN apk add --no-cache -qq libffi gcc postgresql-dev musl-dev bash libffi-dev libffi-dev libxslt-dev zlib libjpeg-turbo-dev
+RUN apk add --no-cache -qq ca-certificates gcc libffi \
+  musl-dev bash libffi-dev libffi-dev openssl-dev readline-dev \
+  libxslt-dev zlib libjpeg-turbo-dev
 
 RUN adduser -D -u 501 ${USER}
 
@@ -15,8 +17,9 @@ ADD . /home/${USER}
 
 RUN chown -R ${USER}:${USER} /home/${USER}
 
-RUN pip --no-cache-dir install dumb-init && \
-  pip --no-cache-dir install --upgrade -r /home/${USER}/requirements.txt
+RUN pip install --disable-pip-version-check --no-cache-dir dumb-init && \
+  pip install --disable-pip-version-check --no-cache-dir \
+  -r /home/${USER}/requirements.txt
 
 WORKDIR /home/${USER}/Code
 
