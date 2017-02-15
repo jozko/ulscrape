@@ -19,9 +19,10 @@ class UradniListSpider(scrapy.Spider):
             self.initial_years = [int(y) for y in years.split(",") if y != '']
 
     def start_requests(self):
-       return [scrapy.http.FormRequest(
-           url=self.search_url, formdata={'year': str(year)}, meta={'year': year}
-       ) for year in self.search_years()]
+        return [scrapy.http.FormRequest(self.search_url,
+                                        formdata={'year': str(year)},
+                                        meta={'year': year}
+                                        ) for year in self.search_years()]
 
     def parse(self, response):
         if 'page' not in response.meta:
@@ -40,17 +41,19 @@ class UradniListSpider(scrapy.Spider):
             pages_max = 1
 
         year = response.meta['year']
-        archive_pages = range(1, pages_max+1)
+        archive_pages = range(1, pages_max + 1)
 
         for p in archive_pages:
-            yield scrapy.http.FormRequest(url=self.search_url, formdata={'year': str(year), 'page': str(p)}, meta={'year': year, 'page': p})
+            yield scrapy.http.FormRequest(self.search_url,
+                                          formdata={'year': str(year), 'page': str(p)},
+                                          meta={'year': year, 'page': p})
 
     def parse_archive_page(self, response):
         yield {
-                'urls': [ self.base_url + url for url in response.css('a[href*=_pdf]::attr(href)').extract() ],
-                'meta': response.meta 
-              }
+            'urls': [self.base_url + url for url in response.css('a[href*=_pdf]::attr(href)').extract()],
+            'meta': response.meta
+        }
 
     def search_years(self, initial_years=None):
         """ If initial_years are set, use that. Otherwise use list from 1991 till Today."""
-        return self.initial_years if self.initial_years else range(1991, datetime.now().year+1)
+        return self.initial_years if self.initial_years else range(1991, datetime.now().year + 1)
