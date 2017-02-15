@@ -1,10 +1,11 @@
 # -*- coding: utf-8 -*-
 import re
 from datetime import datetime
-import scrapy
+from scrapy import Spider, FormRequest
+from ulscrape.items import Document
 
 
-class UradniListSpider(scrapy.Spider):
+class UradniListSpider(Spider):
     name = "uradni-list"
     base_url = 'https://www.uradni-list.si'
     allowed_domains = ["uradni-list.si"]
@@ -19,10 +20,10 @@ class UradniListSpider(scrapy.Spider):
             self.initial_years = [int(y) for y in years.split(",") if y != '']
 
     def start_requests(self):
-        return [scrapy.http.FormRequest(self.search_url,
-                                        formdata={'year': str(year)},
-                                        meta={'year': year}
-                                        ) for year in self.search_years()]
+        return [FormRequest(self.search_url,
+                            formdata={'year': str(year)},
+                            meta={'year': year}
+                            ) for year in self.search_years()]
 
     def parse(self, response):
         if 'page' not in response.meta:
@@ -44,15 +45,17 @@ class UradniListSpider(scrapy.Spider):
         archive_pages = range(1, pages_max + 1)
 
         for p in archive_pages:
-            yield scrapy.http.FormRequest(self.search_url,
-                                          formdata={'year': str(year), 'page': str(p)},
-                                          meta={'year': year, 'page': p})
+            yield FormRequest(url=self.search_url,
+                              formdata={'year': str(year), 'page': str(p)},
+                              meta={'year': year, 'page': p})
 
     def parse_archive_page(self, response):
-        yield {
-            'urls': [self.base_url + url for url in response.css('a[href*=_pdf]::attr(href)').extract()],
-            'meta': response.meta
-        }
+        for url in response.css('a[href*=_pdf]::attr(href)').extract():
+            yield Document(
+                archive_year=response.meta['year'],
+                archive_page=response.meta['page'],
+                file_urls=[self.base_url + url]
+            )
 
     def search_years(self, initial_years=None):
         """ If initial_years are set, use that. Otherwise use list from 1991 till Today."""

@@ -59,10 +59,9 @@ ROBOTSTXT_OBEY = False
 
 # Enable or disable extensions
 # See http://scrapy.readthedocs.org/en/latest/topics/extensions.html
-# EXTENSIONS = {
-#    'scrapy.extensions.telnet.TelnetConsole': None,
-# }
-
+EXTENSIONS = {
+    'scrapy.extensions.telnet.TelnetConsole': None,
+}
 # Configure item pipelines
 # See http://scrapy.readthedocs.org/en/latest/topics/item-pipeline.html
 ITEM_PIPELINES = {
@@ -70,7 +69,7 @@ ITEM_PIPELINES = {
     #    'ulscrape.pipelines.SomePipeline': 300,
 }
 
-FILES_STORE = getenv('FILES_STORE', '/tmp')
+FILES_STORE = getenv('FILES_STORE', './data/files')
 
 # Enable and configure the AutoThrottle extension (disabled by default)
 # See http://doc.scrapy.org/en/latest/topics/autothrottle.html
