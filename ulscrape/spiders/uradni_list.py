@@ -2,7 +2,8 @@
 import re
 from datetime import datetime
 from scrapy import Spider, FormRequest
-from ulscrape.items import UlscrapeItem
+from ulscrape.items import Document
+
 
 class UradniListSpider(Spider):
     name = "uradni-list"
@@ -19,8 +20,8 @@ class UradniListSpider(Spider):
             self.initial_years = [int(y) for y in years.split(",") if y != '']
 
     def start_requests(self):
-       return [FormRequest(url=self.search_url, formdata={'year': str(year)}, meta={'year': year}
-            ) for year in self.search_years()]
+        return [FormRequest(url=self.search_url, formdata={'year': str(year)}, meta={'year': year}
+                            ) for year in self.search_years()]
 
     def parse(self, response):
         if 'page' not in response.meta:
@@ -39,20 +40,20 @@ class UradniListSpider(Spider):
             pages_max = 1
 
         year = response.meta['year']
-        archive_pages = range(1, pages_max+1)
+        archive_pages = range(1, pages_max + 1)
 
         for p in archive_pages:
-            yield FormRequest(url=self.search_url, formdata={'year': str(year), 'page': str(p)}, meta={'year': year, 'page': p})
+            yield FormRequest(url=self.search_url, formdata={'year': str(year), 'page': str(p)},
+                              meta={'year': year, 'page': p})
 
     def parse_archive_page(self, response):
         for url in response.css('a[href*=_pdf]::attr(href)').extract():
-            yield UlscrapeItem(
-                    scrapped_at = datetime.now().strftime('%Y-%m-%d %H:%M:%S'),
-                    archive_year = response.meta['year'],
-                    archive_page = response.meta['page'],
-                    file_urls = [ self.base_url + url ] 
-                    )
+            yield Document(
+                archive_year=response.meta['year'],
+                archive_page=response.meta['page'],
+                file_urls=[self.base_url + url]
+            )
 
     def search_years(self, initial_years=None):
         """ If initial_years are set, use that. Otherwise use list from 1991 till Today."""
-        return self.initial_years if self.initial_years else range(1991, datetime.now().year+1)
+        return self.initial_years if self.initial_years else range(1991, datetime.now().year + 1)
