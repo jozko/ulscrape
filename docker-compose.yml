@@ -25,4 +25,4 @@ services:
   environment:
    - RABBITMQ_DEFAULT_USER=ulscrape
    - RABBITMQ_DEFAULT_PASS=ulscrape
-   - RABBITMQ_DEFAULT_VHOST=ulscrape
+   # - RABBITMQ_DEFAULT_VHOST=ulscrape

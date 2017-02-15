@@ -2,7 +2,8 @@
 import re
 from datetime import datetime
 import scrapy
-from ulscrape.spiders import UlSpider, UlSpiderModes
+from ulscrape.spiders import UlSpider, UlSpiderModes, DisperseRequest, DisperseFormRequest
+from scrapy.exceptions import DontCloseSpider
 
 
 class UradniListSpider(UlSpider):
@@ -20,15 +21,15 @@ class UradniListSpider(UlSpider):
             self.initial_years = [int(y) for y in years.split(",") if y != '']
 
     def start_requests(self):
-        if self.mode == UlSpiderModes.Standalone or self.mode == UlSpiderModes.Master:
+        if self.mode != UlSpiderModes.Slave:
             return self.initial_requests()
-        elif self.mode == UlSpiderModes.Slave:
-            return self.slave_listen()
+        else:
+            return []
 
     def initial_requests(self):
-        return [scrapy.http.FormRequest(
-            url=self.search_url, formdata={'year': str(year)}, meta={'year': year}
-        ) for year in self.search_years()]
+        return [DisperseFormRequest(self.search_url,
+                                    formdata={'year': str(year)},
+                                    meta={'year': year}) for year in self.search_years()]
 
     def parse(self, response):
         if 'page' not in response.meta:
@@ -50,8 +51,9 @@ class UradniListSpider(UlSpider):
         archive_pages = range(1, pages_max + 1)
 
         for p in archive_pages:
-            yield scrapy.http.FormRequest(url=self.search_url, formdata={'year': str(year), 'page': str(p)},
-                                          meta={'year': year, 'page': p})
+            yield DisperseFormRequest(self.search_url,
+                                      formdata={'year': str(year), 'page': str(p)},
+                                      meta={'year': year, 'page': p})
 
     def parse_archive_page(self, response):
         yield {
