@@ -1,0 +1,28 @@
+version: '2'
+services:
+ ulscrape:
+  image: jozko/ulscrape
+  entrypoint: scrapy
+  command: "crawl uradni-list -a mode=Master -a years=2016"
+  depends_on:
+   - rabbitmq
+  links:
+   - rabbitmq
+
+ ulscrape_worker:
+  image: jozko/ulscrape
+  entrypoint: scrapy
+  command: "crawl uradni-list -a mode=Slave"
+  depends_on:
+   - rabbitmq
+  links:
+   - rabbitmq
+
+ rabbitmq:
+  image: rabbitmq:3-management-alpine
+  ports:
+   - 8080:15672
+  environment:
+   - RABBITMQ_DEFAULT_USER=ulscrape
+   - RABBITMQ_DEFAULT_PASS=ulscrape
+   - RABBITMQ_DEFAULT_VHOST=ulscrape
