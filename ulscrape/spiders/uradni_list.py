@@ -13,7 +13,10 @@ class UradniListSpider(Spider):
     initial_years = []
 
     def __init__(self, years=None, *args, **kwargs):
-        """ Initialize original Scrapy spider. Then load arguments passed via CLI. """
+        """
+        Initialize original Scrapy spider.
+        Then load arguments passed via CLI.
+        """
         super(UradniListSpider, self).__init__(*args, **kwargs)
 
         if years is not None and years is not '':
@@ -58,5 +61,8 @@ class UradniListSpider(Spider):
         ) for url in response.css('a[href*=_pdf]::attr(href)').extract()]
 
     def search_years(self, initial_years=None):
-        """ If initial_years are set, use that. Otherwise use list from 1991 till Today."""
+        """
+        If initial_years are set, use that.
+        Otherwise use list from 1991 till Today.
+        """
         return self.initial_years if self.initial_years else range(1991, datetime.now().year + 1)
