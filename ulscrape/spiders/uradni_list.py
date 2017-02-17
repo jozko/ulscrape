@@ -57,12 +57,11 @@ class UradniListSpider(UlSpider):
                                       meta={'year': year, 'page': p})
 
     def parse_archive_page(self, response):
-        for url in response.css('a[href*=_pdf]::attr(href)').extract():
-            yield Document(
-                archive_year=response.meta['year'],
-                archive_page=response.meta['page'],
-                file_urls=[self.base_url + url]
-            )
+        return [Document(
+            archive_year=response.meta['year'],
+            archive_page=response.meta['page'],
+            file_urls=[self.base_url + url]
+        ) for url in response.css('a[href*=_pdf]::attr(href)').extract()]
 
     def search_years(self, initial_years=None):
         """ If initial_years are set, use that. Otherwise use list from 1991 till Today."""
