@@ -44,14 +44,18 @@ class UradniListSpider(Spider):
         year = response.meta['year']
         archive_pages = range(1, pages_max + 1)
 
-        return [FormRequest(url=self.search_url, formdata={'year': str(year), 'page': str(p)}, meta={'year': year, 'page': p}) for p in archive_pages]
+        return [FormRequest(
+            self.search_url,
+            formdata={'year': str(year), 'page': str(p)},
+            meta={'year': year, 'page': p}
+        ) for p in archive_pages]
 
     def parse_archive_page(self, response):
-    	return [Document(
-            archive_year = response.meta['year'],
-            archive_page = response.meta['page'],
-            file_urls = [ self.base_url + url ]
-            ) for url in response.css('a[href*=_pdf]::attr(href)').extract()]
+        return [Document(
+            archive_year=response.meta['year'],
+            archive_page=response.meta['page'],
+            file_urls=[self.base_url + url]
+        ) for url in response.css('a[href*=_pdf]::attr(href)').extract()]
 
     def search_years(self, initial_years=None):
         """ If initial_years are set, use that. Otherwise use list from 1991 till Today."""
