@@ -49,7 +49,7 @@ ITEM_PIPELINES = {
     'scrapy.pipelines.files.FilesPipeline': 1,
 }
 
-FILES_STORE = getenv('FILES_STORE', './data/files')
+FILES_STORE = getenv('FILES_STORE', getenv('S3_FILES_STORE', './data/files'))
 
 # Enable and configure the AutoThrottle extension (disabled by default)
 # See http://doc.scrapy.org/en/latest/topics/autothrottle.html
@@ -71,3 +71,10 @@ AUTOTHROTTLE_TARGET_CONCURRENCY = 1.0
 # HTTPCACHE_STORAGE = 'scrapy.extensions.httpcache.FilesystemCacheStorage'
 
 DUPEFILTER_DEBUG = True
+
+AWS_ENDPOINT_URL = getenv('AWS_ENDPOINT_URL', None)
+AWS_USE_SSL = False
+AWS_VERIFY = False
+AWS_ACCESS_KEY_ID = getenv('S3_ACCESS_KEY', getenv('AWS_ACCESS_KEY_ID', None))
+AWS_SECRET_ACCESS_KEY = getenv('S3_ACCESS_SECRET', getenv('AWS_SECRET_ACCESS_KEY', None))
+FILES_STORE_S3_ACL = 'public-read'

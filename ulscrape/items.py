@@ -9,6 +9,7 @@ class Document(Item):
     archive_year = Field()
     archive_page = Field()
     file_urls = Field()
+    files = Field()
 
     def __init__(self, *args, **kwargs):
         super(Item, self).__init__(*args, **kwargs)

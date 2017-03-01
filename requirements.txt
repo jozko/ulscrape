@@ -1,3 +1,4 @@
+git+git://github.com/otobrglez/scrapy@extending-s3-files-store
 cryptography
-Scrapy==1.3.2
 pika
+botocore
