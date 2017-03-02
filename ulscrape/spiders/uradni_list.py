@@ -16,6 +16,10 @@ class UradniListSpider(UlSpider):
     initial_years = []
 
     def __init__(self, years=None, *args, **kwargs):
+        """
+        Initialize original Scrapy spider.
+        Then load arguments passed via CLI.
+        """
         super(UradniListSpider, self).__init__(*args, **kwargs)
 
         if years is not None and years is not '':
@@ -50,11 +54,10 @@ class UradniListSpider(UlSpider):
 
         year = response.meta['year']
         archive_pages = range(1, pages_max + 1)
-
-        for p in archive_pages:
-            yield DisperseFormRequest(self.search_url,
-                                      formdata={'year': str(year), 'page': str(p)},
-                                      meta={'year': year, 'page': p})
+        return [DisperseFormRequest(self.search_url,
+                                    formdata={'year': str(year), 'page': str(p)},
+                                    meta={'year': year, 'page': p}
+        ) for p in archive_pages]
 
     def parse_archive_page(self, response):
         return [Document(
@@ -64,5 +67,8 @@ class UradniListSpider(UlSpider):
         ) for url in response.css('a[href*=_pdf]::attr(href)').extract()]
 
     def search_years(self, initial_years=None):
-        """ If initial_years are set, use that. Otherwise use list from 1991 till Today."""
+        """
+        If initial_years are set, use that.
+        Otherwise use list from 1991 till Today.
+        """
         return self.initial_years if self.initial_years else range(1991, datetime.now().year + 1)
